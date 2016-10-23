@@ -1,6 +1,5 @@
 extern crate crypto;
 extern crate byteorder;
-extern crate rustc_serialize;
 
 use self::crypto::digest::Digest;
 use self::crypto::mac::Mac;
@@ -17,7 +16,6 @@ use self::crypto::curve25519::{curve25519, curve25519_base};
 use self::crypto::util::fixed_time_eq;
 
 use self::byteorder::{ByteOrder, BigEndian, LittleEndian};
-//use self::rustc_serialize::hex::{FromHex, ToHex};
 
 use crypto_types::*;
 use constants::*;

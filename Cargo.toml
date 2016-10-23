@@ -2,8 +2,11 @@
 name = "screech"
 version = "0.1.0"
 authors = ["trevp"]
+
 [dependencies]
 rust-crypto = "*"
 byteorder = "*"
 rand = "0.3"
+
+[dev-dependencies]
 rustc-serialize = "0.3"

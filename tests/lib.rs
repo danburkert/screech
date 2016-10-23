@@ -2,8 +2,7 @@ extern crate screech;
 extern crate rustc_serialize;
 
 use screech::*;
-use self::rustc_serialize::hex::{FromHex, ToHex};
-
+use self::rustc_serialize::hex::ToHex;
 
 struct RandomInc {
     next_byte: u8
