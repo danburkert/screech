@@ -125,11 +125,11 @@ fn test1() {
 
         let mut buffer_msg = [0u8; 64];
         let mut buffer_out = [0u8; 10];
-        assert!(h_i.write_message("abc".as_bytes(), &mut buffer_msg).0 == 35);
+        assert!(h_i.write_message(b"abc", &mut buffer_msg).0 == 35);
         assert!(h_r.read_message(&buffer_msg[..35], &mut buffer_out).unwrap().0 == 3);
         assert!(buffer_out[..3].to_hex() == "616263");
 
-        assert!(h_r.write_message("defg".as_bytes(), &mut buffer_msg).0 == 52);
+        assert!(h_r.write_message(b"defg", &mut buffer_msg).0 == 52);
         assert!(h_i.read_message(&buffer_msg[..52], &mut buffer_out).unwrap().0 == 4);
         assert!(buffer_out[..4].to_hex() == "64656667");
 
@@ -175,11 +175,11 @@ fn test1() {
        
         let mut buffer_msg = [0u8; 200];
         let mut buffer_out = [0u8; 200];
-        assert!(h_i.write_message("abc".as_bytes(), &mut buffer_msg).0 == 35);
+        assert!(h_i.write_message(b"abc", &mut buffer_msg).0 == 35);
         assert!(h_r.read_message(&buffer_msg[..35], &mut buffer_out).unwrap().0 == 3);
         assert!(buffer_out[..3].to_hex() == "616263");
 
-        assert!(h_r.write_message("defg".as_bytes(), &mut buffer_msg).0 == 100);
+        assert!(h_r.write_message(b"defg", &mut buffer_msg).0 == 100);
         assert!(h_i.read_message(&buffer_msg[..100], &mut buffer_out).unwrap().0 == 4);
         assert!(buffer_out[..4].to_hex() == "64656667");
 
@@ -213,7 +213,7 @@ fn test1() {
         let mut h_i = HandshakeState::new_from_owner(&mut owner_i,
                             true,
                             HandshakePattern::IK,
-                            "ABC".as_bytes(),
+                            b"ABC",
                             None,
                             &mut cipherstate1_i,
                             &mut cipherstate2_i);
@@ -221,7 +221,7 @@ fn test1() {
         let mut h_r = HandshakeState::new_from_owner(&mut owner_r,
                             false,
                             HandshakePattern::IK,
-                            "ABC".as_bytes(),
+                            b"ABC",
                             None,
                             &mut cipherstate1_r,
                             &mut cipherstate2_r);
@@ -229,11 +229,11 @@ fn test1() {
 
         let mut buffer_msg = [0u8; 200];
         let mut buffer_out = [0u8; 200];
-        assert!(h_i.write_message("abc".as_bytes(), &mut buffer_msg).0 == 99);
+        assert!(h_i.write_message(b"abc", &mut buffer_msg).0 == 99);
         assert!(h_r.read_message(&buffer_msg[..99], &mut buffer_out).unwrap().0 == 3);
         assert!(buffer_out[..3].to_hex() == "616263");
 
-        assert!(h_r.write_message("defg".as_bytes(), &mut buffer_msg).0 == 52);
+        assert!(h_r.write_message(b"defg", &mut buffer_msg).0 == 52);
         assert!(h_i.read_message(&buffer_msg[..52], &mut buffer_out).unwrap().0 == 4);
         assert!(buffer_out[..4].to_hex() == "64656667");
 

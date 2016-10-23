@@ -56,11 +56,11 @@ pub struct HashBLAKE2s {
 impl DhType for Dh25519 {
 
     fn name(&self, out : &mut [u8]) -> usize { 
-        copy_memory("25519".as_bytes(), out)
+        copy_memory(b"25519", out)
     }
 
     fn pub_len(&self) -> usize {
-        return 32;
+        32
     }
 
     fn set(&mut self, privkey: &[u8], pubkey: &[u8]) {
@@ -91,7 +91,7 @@ impl DhType for Dh25519 {
 impl CipherType for CipherAESGCM {
 
     fn name(&self, out : &mut [u8]) -> usize { 
-        copy_memory("AESGCM".as_bytes(), out)
+        copy_memory(b"AESGCM", out)
     }
 
     fn set(&mut self, key: &[u8]) {
@@ -122,7 +122,7 @@ impl CipherType for CipherAESGCM {
 impl CipherType for CipherChaChaPoly {
 
     fn name(&self, out : &mut [u8]) -> usize { 
-        copy_memory("ChaChaPoly".as_bytes(), out)
+        copy_memory(b"ChaChaPoly", out)
     }
 
     fn set(&mut self, key: &[u8]) {
@@ -138,9 +138,9 @@ impl CipherType for CipherChaChaPoly {
         let mut poly_key = [0u8; 64];
         cipher.process(&zeros, &mut poly_key);
         cipher.process(plaintext, &mut out[..plaintext.len()]);
-       
+
         let mut poly = Poly1305::new(&poly_key[..32]);
-        poly.input(&authtext);
+        poly.input(authtext);
         let mut padding = [0u8; 16];
         poly.input(&padding[..(16 - (authtext.len() % 16)) % 16]);
         poly.input(&out[..plaintext.len()]);
@@ -164,7 +164,7 @@ impl CipherType for CipherChaChaPoly {
         let mut poly = Poly1305::new(&poly_key[..32]);
         let mut padding = [0u8; 15];
         let text_len = ciphertext.len() - TAGLEN;
-        poly.input(&authtext);
+        poly.input(authtext);
         poly.input(&padding[..(16 - (authtext.len() % 16)) % 16]);
         poly.input(&ciphertext[..text_len]);
         poly.input(&padding[..(16 - (text_len % 16)) % 16]);
@@ -192,15 +192,15 @@ impl Default for HashSHA256 {
 impl HashType for HashSHA256 {
 
     fn block_len(&self) -> usize {
-        return 64;
+        64
     }
 
     fn hash_len(&self) -> usize {
-        return 32;
+        32
     }
 
     fn name(&self, out : &mut [u8]) -> usize { 
-        copy_memory("SHA256".as_bytes(), out)
+        copy_memory(b"SHA256", out)
     }
 
     fn reset(&mut self) {
@@ -225,15 +225,15 @@ impl Default for HashSHA512 {
 impl HashType for HashSHA512 {
 
     fn name(&self, out: &mut [u8]) -> usize { 
-        copy_memory("SHA512".as_bytes(), out)
+        copy_memory(b"SHA512", out)
     }
 
     fn block_len(&self) -> usize {
-        return 128;
+        128
     }
 
     fn hash_len(&self) -> usize {
-        return 64;
+        64
     }
 
     fn reset(&mut self) {
@@ -258,15 +258,15 @@ impl Default for HashBLAKE2b {
 impl HashType for HashBLAKE2b {
 
     fn name(&self, out : &mut [u8]) -> usize { 
-        copy_memory("BLAKE2b".as_bytes(), out)
+        copy_memory(b"BLAKE2b", out)
     }
 
     fn block_len(&self) -> usize {
-        return 128;
+        128
     }
 
     fn hash_len(&self) -> usize {
-        return 64;
+        64
     }
 
     fn reset(&mut self) {
@@ -291,15 +291,15 @@ impl Default for HashBLAKE2s {
 impl HashType for HashBLAKE2s {
 
     fn name(&self, out : &mut [u8]) -> usize { 
-        copy_memory("BLAKE2s".as_bytes(), out)
+        copy_memory(b"BLAKE2s", out)
     }
 
     fn block_len(&self) -> usize {
-        return 64;
+        64
     }
 
     fn hash_len(&self) -> usize {
-        return 32;
+        32
     }
 
     fn reset(&mut self) {
@@ -337,7 +337,7 @@ mod tests {
         {
             let mut output = [0u8; 32];
             let mut hasher:HashSHA256 = Default::default();
-            hasher.input("abc".as_bytes());
+            hasher.input(b"abc");
             hasher.result(&mut output);
             assert!(output.to_hex() == "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
         }
@@ -364,7 +364,7 @@ mod tests {
         {
             let mut output = [0u8; 64];
             let mut hasher:HashBLAKE2b = Default::default();
-            hasher.input("abc".as_bytes());
+            hasher.input(b"abc");
             hasher.result(&mut output);
             assert!(output.to_hex() == "ba80a53f981c4d0d6a2797b69f12f6e9\
                                         4c212f14685ac4b74b12bb6fdbffa2d1\
@@ -376,7 +376,7 @@ mod tests {
         {
             let mut output = [0u8; 32];
             let mut hasher:HashBLAKE2s = Default::default();
-            hasher.input("abc".as_bytes());
+            hasher.input(b"abc");
             hasher.result(&mut output);
             assert!(output.to_hex() == "508c5e8c327c14e2e1a72ba34eeb452f\
 	    				37458b209ed63a294d999b4c86675982"); 
