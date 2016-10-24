@@ -55,8 +55,8 @@ pub struct HashBLAKE2s {
 
 impl DhType for Dh25519 {
 
-    fn name(&self, out : &mut [u8]) -> usize { 
-        copy_memory(b"25519", out)
+    fn name(&self) -> &'static str {
+        "25519"
     }
 
     fn pub_len(&self) -> usize {
@@ -90,8 +90,8 @@ impl DhType for Dh25519 {
 
 impl CipherType for CipherAESGCM {
 
-    fn name(&self, out : &mut [u8]) -> usize { 
-        copy_memory(b"AESGCM", out)
+    fn name(&self) -> &'static str {
+        "AESGCM"
     }
 
     fn set(&mut self, key: &[u8]) {
@@ -121,8 +121,8 @@ impl CipherType for CipherAESGCM {
 
 impl CipherType for CipherChaChaPoly {
 
-    fn name(&self, out : &mut [u8]) -> usize { 
-        copy_memory(b"ChaChaPoly", out)
+    fn name(&self) -> &'static str {
+        "ChaChaPoly"
     }
 
     fn set(&mut self, key: &[u8]) {
@@ -199,8 +199,8 @@ impl HashType for HashSHA256 {
         32
     }
 
-    fn name(&self, out : &mut [u8]) -> usize { 
-        copy_memory(b"SHA256", out)
+    fn name(&self) -> &'static str {
+        "SHA256"
     }
 
     fn reset(&mut self) {
@@ -224,8 +224,8 @@ impl Default for HashSHA512 {
 
 impl HashType for HashSHA512 {
 
-    fn name(&self, out: &mut [u8]) -> usize { 
-        copy_memory(b"SHA512", out)
+    fn name(&self) -> &'static str {
+        "SHA512"
     }
 
     fn block_len(&self) -> usize {
@@ -257,8 +257,8 @@ impl Default for HashBLAKE2b {
 
 impl HashType for HashBLAKE2b {
 
-    fn name(&self, out : &mut [u8]) -> usize { 
-        copy_memory(b"BLAKE2b", out)
+    fn name(&self) -> &'static str {
+        "BLAKE2b"
     }
 
     fn block_len(&self) -> usize {
@@ -290,8 +290,8 @@ impl Default for HashBLAKE2s {
 
 impl HashType for HashBLAKE2s {
 
-    fn name(&self, out : &mut [u8]) -> usize { 
-        copy_memory(b"BLAKE2s", out)
+    fn name(&self) -> &'static str {
+        "BLAKE2s"
     }
 
     fn block_len(&self) -> usize {

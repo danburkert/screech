@@ -4,8 +4,8 @@ use crypto_types::*;
 use cipherstate::*;
 
 pub trait SymmetricStateType {
-    fn cipher_name(&self, out : &mut [u8]) -> usize;
-    fn hash_name(&self, out : &mut [u8]) -> usize;
+    fn cipher_name(&self) -> &'static str;
+    fn hash_name(&self) -> &'static str;
     fn initialize(&mut self, handshake_name: &[u8]);
     fn mix_key(&mut self, data: &[u8]);
     fn mix_hash(&mut self, data: &[u8]);
@@ -41,12 +41,12 @@ impl<'a> SymmetricState<'a> {
 
 impl<'a> SymmetricStateType for SymmetricState<'a> {
 
-    fn cipher_name(&self, out : &mut [u8]) -> usize {
-        self.cipherstate.name(out)
+    fn cipher_name(&self) -> &'static str {
+        self.cipherstate.name()
     }
 
-    fn hash_name(&self, out : &mut [u8]) -> usize {
-        self.hasher.name(out)
+    fn hash_name(&self) -> &'static str {
+        self.hasher.name()
     }
 
     fn initialize(&mut self, handshake_name: &[u8]) {
@@ -55,7 +55,7 @@ impl<'a> SymmetricStateType for SymmetricState<'a> {
             copy_memory(handshake_name, &mut self.h);
         } else {
             self.hasher.reset();
-            self.hasher.input(handshake_name); 
+            self.hasher.input(handshake_name);
             self.hasher.result(&mut self.h);
         }
         copy_memory(&self.h, &mut self.ck);
