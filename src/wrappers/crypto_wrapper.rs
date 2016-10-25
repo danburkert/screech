@@ -193,6 +193,7 @@ impl fmt::Debug for CipherChaChaPoly {
 pub struct HashSHA256 {
     hasher: Sha256
 }
+
 impl HashType for HashSHA256 {
 
     fn new() -> HashSHA256 {
@@ -229,6 +230,12 @@ impl HashType for HashSHA256 {
 impl fmt::Debug for HashSHA256 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "SHA256")
+    }
+}
+
+impl Default for HashSHA256 {
+    fn default() -> HashSHA256 {
+        HashSHA256::new()
     }
 }
 
@@ -275,6 +282,12 @@ impl fmt::Debug for HashSHA512 {
     }
 }
 
+impl Default for HashSHA512 {
+    fn default() -> HashSHA512 {
+        HashSHA512::new()
+    }
+}
+
 pub struct HashBLAKE2b {
     hasher: Blake2b
 }
@@ -318,6 +331,12 @@ impl fmt::Debug for HashBLAKE2b {
     }
 }
 
+impl Default for HashBLAKE2b {
+    fn default() -> HashBLAKE2b {
+        HashBLAKE2b::new()
+    }
+}
+
 pub struct HashBLAKE2s {
     hasher: Blake2s
 }
@@ -358,6 +377,12 @@ impl HashType for HashBLAKE2s {
 impl fmt::Debug for HashBLAKE2s {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "BLAKE2s")
+    }
+}
+
+impl Default for HashBLAKE2s {
+    fn default() -> HashBLAKE2s {
+        HashBLAKE2s::new()
     }
 }
 

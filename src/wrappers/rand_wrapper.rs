@@ -1,20 +1,22 @@
 extern crate rand;
 
 use self::rand::{OsRng, Rng};
-use crypto_types::*;
+use crypto_types::RandomType;
 
 pub struct RandomOs {
-    rng : OsRng
+    rng: OsRng
 }
 
 impl Default for RandomOs {
     fn default() -> RandomOs {
-        RandomOs {rng: OsRng::new().unwrap()}
+        RandomOs {
+            rng: OsRng::new().unwrap()
+        }
     }
 }
 
 impl RandomType for RandomOs {
     fn fill_bytes(&mut self, out: &mut [u8]) {
-        self.rng.fill_bytes(out); 
+        self.rng.fill_bytes(out);
     }
 }

@@ -41,7 +41,7 @@ pub fn copy_memory(data: &[u8], out: &mut [u8]) -> usize {
 fn test_Noise_N() {
     let mut owner = HandshakeCryptoOwner::<RandomInc, Dh25519>::new();
     let static_r = Dh25519::generate(&mut owner.rng);
-    owner.set_rs(static_r.pubkey().clone());
+    owner.set_rs(*static_r.pubkey());
 
     let mut h = HandshakeState::<_, CipherAESGCM, HashSHA256>::new_from_owner(&mut owner,
                                                                               true,
@@ -61,7 +61,7 @@ fn test_Noise_X() {
     let static_r = Dh25519::generate(&mut owner.rng);
 
     owner.set_s(static_i);
-    owner.set_rs(static_r.pubkey().clone());
+    owner.set_rs(*static_r.pubkey());
 
     let mut h = HandshakeState::<_, CipherChaChaPoly, HashSHA256>::new_from_owner(&mut owner,
                                                                                   true,
@@ -152,7 +152,7 @@ fn test_Noise_IK() {
     let static_i = Dh25519::generate(&mut owner_i.rng);
     let static_r = Dh25519::generate(&mut owner_r.rng);
     owner_i.set_s(static_i);
-    owner_i.set_rs(static_r.pubkey().clone());
+    owner_i.set_rs(*static_r.pubkey());
     owner_r.set_s(static_r);
 
     let mut h_i = HandshakeState::<_, CipherAESGCM, HashSHA256>::new_from_owner(&mut owner_i,
