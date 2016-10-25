@@ -9,9 +9,11 @@ use handshakecryptoowner::*;
 #[derive(Debug)]
 pub enum NoiseError { DecryptError }
 
-pub struct HandshakeState<'a, D, C> where D: DhType,
-                                          C: CipherType + 'a {
-    symmetricstate : SymmetricState<'a, C>,        /* for handshaking */
+pub struct HandshakeState<D, C, H>
+where D: DhType,
+      C: CipherType,
+      H: HashType {
+    symmetricstate : SymmetricState<C, H>,
     s: Option<D>,
     e: D,
     rs: Option<D::PublicKey>,
@@ -21,33 +23,31 @@ pub struct HandshakeState<'a, D, C> where D: DhType,
     message_index: usize,
 }
 
-impl<'a, D, C> HandshakeState<'a, D, C>
-where D: DhType + Clone + Default,
+impl<D, C, H> HandshakeState<D, C, H>
+where D: DhType + Clone,
       D::PublicKey: Clone,
-      C: CipherType {
+      C: CipherType,
+      H: HashType {
 
-    pub fn new_from_owner<R: RandomType + Default,
-                          H: HashType + Default>
-                         (owner: &'a mut HandshakeCryptoOwner<R, D, H>,
-                          initiator: bool,
-                          handshake_pattern: HandshakePattern,
-                          prologue: &[u8],
-                          optional_preshared_key: Option<&[u8]>) -> HandshakeState<'a, D, C> {
-        HandshakeState::<'a>::new(
-            &mut owner.rng,
-            &mut owner.hasher,
-            owner.s.clone(),
-            owner.e.clone(),
-            owner.rs.clone(),
-            owner.re.clone(),
-            initiator,
-            handshake_pattern,
-            prologue,
-            optional_preshared_key)
+    pub fn new_from_owner<R>(owner: &mut HandshakeCryptoOwner<R, D>,
+                             initiator: bool,
+                             handshake_pattern: HandshakePattern,
+                             prologue: &[u8],
+                             optional_preshared_key: Option<&[u8]>)
+                             -> HandshakeState<D, C, H>
+    where R: RandomType {
+        HandshakeState::new(&mut owner.rng,
+                            owner.s.clone(),
+                            owner.e.clone(),
+                            owner.rs.clone(),
+                            owner.re.clone(),
+                            initiator,
+                            handshake_pattern,
+                            prologue,
+                            optional_preshared_key)
     }
 
-    pub fn new(rng: &'a mut RandomType,
-               hasher: &'a mut HashType,
+    pub fn new(rng: &mut RandomType,
                s: Option<D>,
                e: Option<D>,
                rs: Option<D::PublicKey>,
@@ -55,7 +55,7 @@ where D: DhType + Clone + Default,
                initiator: bool,
                handshake_pattern: HandshakePattern,
                prologue: &[u8],
-               optional_preshared_key: Option<&[u8]>) -> HandshakeState<'a, D, C> {
+               optional_preshared_key: Option<&[u8]>) -> HandshakeState<D, C, H> {
 
         let e = e.unwrap_or_else(|| D::generate(rng));
 
@@ -66,14 +66,14 @@ where D: DhType + Clone + Default,
                                "_", handshake_pattern.name(),
                                "_", D::name(),
                                "_", C::name(),
-                               "_", hasher.name()] {
+                               "_", H::name()] {
                 handshake_name[name_len..name_len + component.len()].copy_from_slice(component.as_bytes());
                 name_len += component.len();
             }
             &handshake_name[..name_len]
         };
 
-        let mut symmetricstate = SymmetricState::new(hasher);
+        let mut symmetricstate = SymmetricState::new();
         symmetricstate.initialize(handshake_name);
         symmetricstate.mix_hash(prologue);
 

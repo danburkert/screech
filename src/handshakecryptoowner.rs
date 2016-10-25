@@ -1,25 +1,17 @@
 use crypto_types::*;
 
-pub struct HandshakeCryptoOwner<R, D, H>
-where R: RandomType,
-      D: DhType,
-      H: HashType {
+pub struct HandshakeCryptoOwner<R, D> where R: RandomType, D: DhType {
     pub rng: R,
-    pub hasher: H,
     pub s: Option<D>,
     pub e: Option<D>,
     pub rs: Option<D::PublicKey>,
     pub re: Option<D::PublicKey>,
 }
 
-impl<R, D, H> Default for HandshakeCryptoOwner<R, D, H>
-where R: RandomType + Default,
-      D: DhType,
-      H: HashType + Default {
-    fn default() -> HandshakeCryptoOwner<R, D, H> {
+impl<R, D> Default for HandshakeCryptoOwner<R, D> where R: RandomType + Default, D: DhType {
+    fn default() -> HandshakeCryptoOwner<R, D> {
         HandshakeCryptoOwner{
             rng : Default::default(),
-            hasher: Default::default(),
             s: None,
             e: None,
             rs: None,
@@ -28,12 +20,9 @@ where R: RandomType + Default,
     }
 }
 
-impl<R, D, H> HandshakeCryptoOwner<R, D, H>
-where R: RandomType + Default,
-      D: DhType,
-      H: HashType + Default {
+impl<R, D> HandshakeCryptoOwner<R, D> where R: RandomType + Default, D: DhType {
 
-    pub fn new() -> HandshakeCryptoOwner<R, D, H> {
+    pub fn new() -> HandshakeCryptoOwner<R, D> {
         Default::default()
     }
 

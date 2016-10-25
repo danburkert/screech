@@ -23,7 +23,7 @@ use crypto_types::*;
 use constants::*;
 use utils::*;
 
-#[derive(Default, Clone)]
+#[derive(Clone)]
 pub struct Dh25519 {
     privkey: [u8; 32],
     pubkey: [u8; 32],
@@ -110,7 +110,7 @@ impl CipherType for CipherAESGCM {
 
 impl fmt::Debug for CipherAESGCM {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "AESCM")
+        write!(f, "AESGCM")
     }
 }
 
@@ -193,24 +193,23 @@ impl fmt::Debug for CipherChaChaPoly {
 pub struct HashSHA256 {
     hasher: Sha256
 }
-
-impl Default for HashSHA256 {
-    fn default() -> HashSHA256 {
-        HashSHA256{hasher: Sha256::new()}
-    }
-}
-
 impl HashType for HashSHA256 {
 
-    fn block_len(&self) -> usize {
+    fn new() -> HashSHA256 {
+        HashSHA256 {
+            hasher: Sha256::new(),
+        }
+    }
+
+    fn block_len() -> usize {
         64
     }
 
-    fn hash_len(&self) -> usize {
+    fn hash_len() -> usize {
         32
     }
 
-    fn name(&self) -> &'static str {
+    fn name() -> &'static str {
         "SHA256"
     }
 
@@ -227,28 +226,33 @@ impl HashType for HashSHA256 {
     }
 }
 
+impl fmt::Debug for HashSHA256 {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "SHA256")
+    }
+}
+
 pub struct HashSHA512 {
     hasher: Sha512
 }
 
-
-impl Default for HashSHA512 {
-    fn default() -> HashSHA512 {
-        HashSHA512{hasher:Sha512::new()}
-    }
-}
-
 impl HashType for HashSHA512 {
 
-    fn name(&self) -> &'static str {
+    fn new() -> HashSHA512 {
+        HashSHA512 {
+            hasher: Sha512::new(),
+        }
+    }
+
+    fn name() -> &'static str {
         "SHA512"
     }
 
-    fn block_len(&self) -> usize {
+    fn block_len() -> usize {
         128
     }
 
-    fn hash_len(&self) -> usize {
+    fn hash_len() -> usize {
         64
     }
 
@@ -265,27 +269,33 @@ impl HashType for HashSHA512 {
     }
 }
 
+impl fmt::Debug for HashSHA512 {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "SHA512")
+    }
+}
+
 pub struct HashBLAKE2b {
     hasher: Blake2b
 }
 
-impl Default for HashBLAKE2b {
-    fn default() -> HashBLAKE2b {
-        HashBLAKE2b{hasher:Blake2b::new(64)}
-    }
-}
-
 impl HashType for HashBLAKE2b {
 
-    fn name(&self) -> &'static str {
+    fn new() -> HashBLAKE2b {
+        HashBLAKE2b {
+            hasher: Blake2b::new(64),
+        }
+    }
+
+    fn name() -> &'static str {
         "BLAKE2b"
     }
 
-    fn block_len(&self) -> usize {
+    fn block_len() -> usize {
         128
     }
 
-    fn hash_len(&self) -> usize {
+    fn hash_len() -> usize {
         64
     }
 
@@ -302,33 +312,39 @@ impl HashType for HashBLAKE2b {
     }
 }
 
+impl fmt::Debug for HashBLAKE2b {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "BLAKE2b")
+    }
+}
+
 pub struct HashBLAKE2s {
     hasher: Blake2s
 }
 
-impl Default for HashBLAKE2s {
-    fn default() -> HashBLAKE2s {
-        HashBLAKE2s{hasher:Blake2s::new(32)}
-    }
-}
-
 impl HashType for HashBLAKE2s {
 
-    fn name(&self) -> &'static str {
+    fn new() -> HashBLAKE2s {
+        HashBLAKE2s {
+            hasher: Blake2s::new(32),
+        }
+    }
+
+    fn name() -> &'static str {
         "BLAKE2s"
     }
 
-    fn block_len(&self) -> usize {
+    fn block_len() -> usize {
         64
     }
 
-    fn hash_len(&self) -> usize {
+    fn hash_len() -> usize {
         32
     }
 
     fn reset(&mut self) {
         self.hasher = Blake2s::new(32);
-    }   
+    }
 
     fn input(&mut self, data: &[u8]) {
         crypto::digest::Digest::input(&mut self.hasher, data);
@@ -339,6 +355,11 @@ impl HashType for HashBLAKE2s {
     }
 }
 
+impl fmt::Debug for HashBLAKE2s {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "BLAKE2s")
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -360,7 +381,7 @@ mod tests {
         // SHA256 test
         {
             let mut output = [0u8; 32];
-            let mut hasher = HashSHA256::default();
+            let mut hasher = HashSHA256::new();
             hasher.input(b"abc");
             hasher.result(&mut output);
             assert!(output.to_hex() == "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
@@ -371,12 +392,12 @@ mod tests {
             let key = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa".from_hex().unwrap();
             let data = "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd".from_hex().unwrap();
             let mut output1 = [0u8; 32];
-            let mut hasher = HashSHA256::default();
+            let mut hasher = HashSHA256::new();
             hasher.hmac(&key, &data, &mut output1);
             assert!(output1.to_hex() == "773ea91e36800e46854db8ebd09181a72959098b3ef8c122d9635514ced565fe");
 
             let mut output2 = [0u8; 64];
-            let mut hasher = HashSHA512::default();
+            let mut hasher = HashSHA512::new();
             hasher.hmac(&key, &data, &mut output2);
             assert!(output2.to_hex() == "fa73b0089d56a284efb0f0756c890be9\
                                          b1b5dbdd8ee81a3655f83e33b2279d39\
@@ -387,7 +408,7 @@ mod tests {
         // BLAKE2b test - draft-saarinen-blake2-06
         {
             let mut output = [0u8; 64];
-            let mut hasher = HashBLAKE2b::default();
+            let mut hasher = HashBLAKE2b::new();
             hasher.input(b"abc");
             hasher.result(&mut output);
             assert!(output.to_hex() == "ba80a53f981c4d0d6a2797b69f12f6e9\
@@ -399,7 +420,7 @@ mod tests {
         // BLAKE2s test - draft-saarinen-blake2-06
         {
             let mut output = [0u8; 32];
-            let mut hasher = HashBLAKE2s::default();
+            let mut hasher = HashBLAKE2s::new();
             hasher.input(b"abc");
             hasher.result(&mut output);
             assert_eq!(output.to_hex(), "508c5e8c327c14e2e1a72ba34eeb452f37458b209ed63a294d999b4c86675982");
@@ -407,13 +428,14 @@ mod tests {
 
         // Curve25519 test - draft-curves-10
         {
-            let mut keypair = Dh25519::default();
-            let scalar = "a546e36bf0527c9d3b16154b82465edd62144c0ac1fc5a18506a2244ba449ac4".from_hex().unwrap();
-            copy_memory(&scalar, &mut keypair.privkey);
-            let mut public = [0u8; 32];
-            public.copy_from_slice(&"e6db6867583030db3594c1a424b15f7c726624ec26b3353b10a903a6d0ab1c4c".from_hex().unwrap());
+            let mut privkey = [0; 32];
+            privkey.copy_from_slice(&"a546e36bf0527c9d3b16154b82465edd62144c0ac1fc5a18506a2244ba449ac4".from_hex().unwrap());
+            let mut pubkey = [0u8; 32];
+            pubkey.copy_from_slice(&"e6db6867583030db3594c1a424b15f7c726624ec26b3353b10a903a6d0ab1c4c".from_hex().unwrap());
+            let keypair = Dh25519::new(privkey, pubkey);
+
             let mut output = [0u8; 32];
-            keypair.dh(&public, &mut output);
+            keypair.dh(&pubkey, &mut output);
             assert_eq!(output.to_hex(), "c3da55379de9c6908e94ea4df28d084f32eccf03491c71f754b4075577a28552");
         }
 
