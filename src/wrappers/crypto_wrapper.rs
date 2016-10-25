@@ -21,7 +21,7 @@ use crypto_types::*;
 use constants::*;
 use utils::*;
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Dh25519 {
     privkey : [u8; 32],
     pubkey  : [u8; 32],
@@ -54,38 +54,45 @@ pub struct HashBLAKE2s {
 }
 
 impl DhType for Dh25519 {
+    type PrivateKey = [u8; 32];
+    type PublicKey = [u8; 32];
 
-    fn name(&self) -> &'static str {
+    fn new(private_key: [u8; 32], public_key: [u8; 32]) -> Dh25519 {
+        Dh25519 {
+            privkey: private_key,
+            pubkey: public_key,
+        }
+    }
+
+    fn generate(rng: &mut RandomType) -> Dh25519 {
+        let mut private_key = [0; 32];
+        rng.fill_bytes(&mut private_key);
+        private_key[0] &= 248;
+        private_key[31] &= 127;
+        private_key[31] |= 64;
+        let public_key = curve25519_base(&private_key);
+        Dh25519 {
+            privkey: private_key,
+            pubkey: public_key,
+        }
+    }
+
+    fn name() -> &'static str {
         "25519"
     }
 
-    fn pub_len(&self) -> usize {
+    fn pub_len() -> usize {
         32
     }
 
-    fn set(&mut self, privkey: &[u8], pubkey: &[u8]) {
-        copy_memory(privkey, &mut self.privkey); /* RUSTSUCKS: Why can't I convert slice -> array? */
-        copy_memory(pubkey, &mut self.pubkey);
-    }
-
-    fn generate(&mut self, rng: &mut RandomType) {
-        rng.fill_bytes(&mut self.privkey);
-        self.privkey[0] &= 248;
-        self.privkey[31] &= 127;
-        self.privkey[31] |= 64;
-        let pubkey = curve25519_base(&self.privkey); 
-        copy_memory(&pubkey, &mut self.pubkey);
-    }
-
-    fn pubkey(&self) -> &[u8] {
+    fn pubkey(&self) -> &[u8; 32] {
         &self.pubkey
     }
 
-    fn dh(&self, pubkey: &[u8], out: &mut [u8]) {
+    fn dh(&self, pubkey: &[u8; 32], out: &mut [u8]) {
         let result = curve25519(&self.privkey, pubkey);
         copy_memory(&result, out);
     }
-
 }
 
 impl CipherType for CipherAESGCM {
@@ -387,7 +394,8 @@ mod tests {
             let mut keypair:Dh25519 = Default::default();
             let scalar = "a546e36bf0527c9d3b16154b82465edd62144c0ac1fc5a18506a2244ba449ac4".from_hex().unwrap();
             copy_memory(&scalar, &mut keypair.privkey);
-            let public = "e6db6867583030db3594c1a424b15f7c726624ec26b3353b10a903a6d0ab1c4c".from_hex().unwrap();
+            let mut public = [0u8; 32];
+            public.copy_from_slice(&"e6db6867583030db3594c1a424b15f7c726624ec26b3353b10a903a6d0ab1c4c".from_hex().unwrap());
             let mut output = [0u8; 32];
             keypair.dh(&public, &mut output);
             assert!(output.to_hex() == "c3da55379de9c6908e94ea4df28d084f32eccf03491c71f754b4075577a28552");

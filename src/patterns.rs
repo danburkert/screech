@@ -64,7 +64,7 @@ pub enum Token {
 /// The second character refers to the responder's static key:
 ///
 /// * **`N`** = **`N`**o static key for responder
-/// * **`K`** = Static key for responder **`K`**nown to responder
+/// * **`K`** = Static key for responder **`K`**nown to initiator
 /// * **`X`** = Static key for responder **`X`**mitted ("transmitted") to initiator
 #[derive(Copy, Clone, Debug)]
 pub enum HandshakePattern {
@@ -78,7 +78,6 @@ pub enum HandshakePattern {
     ///   -> e, es
     /// ```
     N,
-
 
     /// ```noise
     /// Noise_K(s, rs):

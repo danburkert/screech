@@ -40,11 +40,9 @@ fn test1() {
 
     // Noise_N test
     {
-        let mut static_r:Dh25519 = Default::default();
-
         let mut owner : HandshakeCryptoOwner<RandomInc, Dh25519, CipherAESGCM, HashSHA256> = Default::default();
-        static_r.generate(&mut owner.rng);
-        owner.set_rs(static_r.pubkey());
+        let static_r = Dh25519::generate(&mut owner.rng);
+        owner.set_rs(static_r.pubkey().clone());
 
         let mut cipherstate1 : CipherState<CipherAESGCM> = Default::default();
         let mut cipherstate2 : CipherState<CipherAESGCM> = Default::default();
@@ -65,15 +63,12 @@ fn test1() {
 
     // Noise_X test
     {
-        let mut static_i:Dh25519 = Default::default();
-        let mut static_r:Dh25519 = Default::default();
-
         let mut owner : HandshakeCryptoOwner<RandomInc, Dh25519, CipherChaChaPoly, HashSHA256> = Default::default();
-        static_i.generate(&mut owner.rng);
-        static_r.generate(&mut owner.rng);
+        let static_i = Dh25519::generate(&mut owner.rng);
+        let static_r = Dh25519::generate(&mut owner.rng);
 
         owner.set_s(static_i);
-        owner.set_rs(static_r.pubkey());
+        owner.set_rs(static_r.pubkey().clone());
 
         let mut cipherstate1 : CipherState<CipherChaChaPoly> = Default::default();
         let mut cipherstate2 : CipherState<CipherChaChaPoly> = Default::default();
@@ -134,15 +129,12 @@ fn test1() {
 
     // Noise_XX test
     {
-        let mut static_i:Dh25519 = Default::default();
-        let mut static_r:Dh25519 = Default::default();
-
         let mut owner_i : HandshakeCryptoOwner<RandomInc, Dh25519, CipherAESGCM, HashSHA256> = Default::default();
         let mut owner_r : HandshakeCryptoOwner<RandomInc, Dh25519, CipherAESGCM, HashSHA256> = Default::default();
 
         owner_r.rng.next_byte = 1;
-        static_i.generate(&mut owner_i.rng);
-        static_r.generate(&mut owner_r.rng);
+        let static_i = Dh25519::generate(&mut owner_i.rng);
+        let static_r = Dh25519::generate(&mut owner_r.rng);
         owner_i.set_s(static_i);
         owner_r.set_s(static_r);
 
@@ -185,17 +177,14 @@ fn test1() {
 
     // Noise_IK test
     {
-        let mut static_i:Dh25519 = Default::default();
-        let mut static_r:Dh25519 = Default::default();
-
         let mut owner_i : HandshakeCryptoOwner<RandomInc, Dh25519, CipherAESGCM, HashSHA256> = Default::default();
         let mut owner_r : HandshakeCryptoOwner<RandomInc, Dh25519, CipherAESGCM, HashSHA256> = Default::default();
 
         owner_r.rng.next_byte = 1;
-        static_i.generate(&mut owner_i.rng);
-        static_r.generate(&mut owner_r.rng);
+        let static_i = Dh25519::generate(&mut owner_i.rng);
+        let static_r = Dh25519::generate(&mut owner_r.rng);
         owner_i.set_s(static_i);
-        owner_i.set_rs(static_r.pubkey());
+        owner_i.set_rs(static_r.pubkey().clone());
         owner_r.set_s(static_r);
 
         let mut cipherstate1_i : CipherState<CipherAESGCM> = Default::default();

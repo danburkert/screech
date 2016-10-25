@@ -6,13 +6,33 @@ pub trait RandomType {
 }
 
 pub trait DhType {
-    fn name(&self) -> &'static str;
-    fn pub_len(&self) -> usize;
 
-    fn set(&mut self, privkey: &[u8], pubkey: &[u8]);
-    fn generate(&mut self, rng: &mut RandomType); 
-    fn pubkey(&self) -> &[u8];
-    fn dh(&self, pubkey: &[u8], out: &mut [u8]);
+    /// The type of the public key.
+    ///
+    /// The trait bounds allow the type to be used generically as a slice of bytes.
+    type PrivateKey: AsRef<[u8]> + AsMut<[u8]> + Default;
+
+    /// The type of the private key.
+    ///
+    /// The trait bounds allow the type to be used generically as a slice of bytes.
+    type PublicKey: AsRef<[u8]> + AsMut<[u8]> + Default;
+
+    /// Creates a new DhType with the provided private and public keys.
+    fn new(private_key: Self::PrivateKey, public_key: Self::PublicKey) -> Self;
+
+    /// Creates a new instance of the DhType with randomly generated keys.
+    fn generate(rng: &mut RandomType) -> Self;
+
+    /// Returns the name of the Diffie Hellman type.
+    fn name() -> &'static str;
+
+    /// Returns the size of the public key in bytes.
+    fn pub_len() -> usize;
+
+    /// Returns the public key.
+    fn pubkey(&self) -> &Self::PublicKey;
+
+    fn dh(&self, pubkey: &Self::PublicKey, out: &mut [u8]);
 }
 
 pub trait CipherType {

@@ -28,7 +28,7 @@ pub struct SymmetricState<'a> {
 
 impl<'a> SymmetricState<'a> {
     pub fn new(cipherstate : &'a mut CipherStateType, hasher: &'a mut HashType) -> SymmetricState<'a> {
-        SymmetricState{
+        SymmetricState {
             cipherstate: cipherstate,
             hasher: hasher,
             h: [0u8; MAXHASHLEN],
