@@ -1,5 +1,4 @@
 use constants::*;
-use utils::*;
 use crypto_types::*;
 use cipherstate::*;
 use symmetricstate::*;
@@ -152,7 +151,7 @@ where D: DhType + Clone,
             match *token {
                 Token::e => {
                     let pubkey = self.e.pubkey().as_ref();
-                    copy_memory(pubkey, &mut message[byte_index..]);
+                    message[byte_index..byte_index+pubkey.len()].copy_from_slice(pubkey);
                     byte_index += pubkey.len();
                     self.symmetricstate.mix_hash(pubkey);
                     if self.symmetricstate.has_preshared_key() {

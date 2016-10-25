@@ -5,7 +5,6 @@ mod handshakecryptoowner;
 mod handshakestate;
 mod patterns;
 mod symmetricstate;
-mod utils;
 mod wrappers;
 
 pub use cipherstate::CipherState;

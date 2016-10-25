@@ -1,4 +1,3 @@
-use utils::*;
 use constants::*;
 use crypto_types::*;
 use cipherstate::*;
@@ -29,20 +28,20 @@ where C: CipherType,
     pub fn initialize(&mut self, handshake_name: &[u8]) {
         if handshake_name.len() <= H::hash_len() {
             self.h = [0u8; MAXHASHLEN];
-            copy_memory(handshake_name, &mut self.h);
+            self.h[..handshake_name.len()].copy_from_slice(handshake_name);
         } else {
             self.hasher.reset();
             self.hasher.input(handshake_name);
             self.hasher.result(&mut self.h);
         }
-        copy_memory(&self.h, &mut self.ck);
+        self.ck.copy_from_slice(&self.h);
         self.has_preshared_key = false;
     }
 
     pub fn mix_key(&mut self, data: &[u8]) {
         let mut hkdf_output = ([0u8; MAXHASHLEN], [0u8; MAXHASHLEN]);
         self.hasher.hkdf(&self.ck[..H::hash_len()], data, &mut hkdf_output.0, &mut hkdf_output.1);
-        copy_memory(&hkdf_output.0, &mut self.ck);
+        self.ck.copy_from_slice(&hkdf_output.0);
 
         let mut key = C::Key::default();
         key.as_mut().copy_from_slice(&hkdf_output.1[..CIPHERKEYLEN]);
@@ -59,7 +58,7 @@ where C: CipherType,
     pub fn mix_preshared_key(&mut self, psk: &[u8]) {
         let mut hkdf_output = ([0u8; MAXHASHLEN], [0u8; MAXHASHLEN]);
         self.hasher.hkdf(&self.ck[..H::hash_len()], psk, &mut hkdf_output.0, &mut hkdf_output.1);
-        copy_memory(&hkdf_output.0, &mut self.ck);
+        self.ck.copy_from_slice(&hkdf_output.0);
         self.mix_hash(&hkdf_output.1[..H::hash_len()]);
         self.has_preshared_key = true;
     }
@@ -77,7 +76,7 @@ where C: CipherType,
             cipherstate.encrypt_ad(&self.h[..H::hash_len()], plaintext, out);
             plaintext.len() + TAGLEN
         } else {
-            copy_memory(plaintext, out);
+            out[..plaintext.len()].copy_from_slice(plaintext);
             plaintext.len()
         };
         self.mix_hash(&out[..output_len]);
@@ -90,7 +89,7 @@ where C: CipherType,
                 return false;
             }
         } else {
-            copy_memory(data, out);
+            out[..data.len()].copy_from_slice(data);
         }
         self.mix_hash(data);
         true

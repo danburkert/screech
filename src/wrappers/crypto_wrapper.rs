@@ -21,7 +21,6 @@ use self::byteorder::{ByteOrder, BigEndian, LittleEndian};
 
 use crypto_types::*;
 use constants::*;
-use utils::*;
 
 #[derive(Clone)]
 pub struct Dh25519 {
@@ -67,7 +66,7 @@ impl DhType for Dh25519 {
 
     fn dh(&self, pubkey: &[u8; 32], out: &mut [u8]) {
         let result = curve25519(&self.privkey, pubkey);
-        copy_memory(&result, out);
+        out[..result.len()].copy_from_slice(&result);
     }
 }
 
@@ -94,7 +93,7 @@ impl CipherType for CipherAESGCM {
         let mut cipher = AesGcm::new(KeySize::KeySize256, &self.key, &nonce_bytes, authtext);
         let mut tag = [0u8; TAGLEN];
         cipher.encrypt(plaintext, &mut out[..plaintext.len()], &mut tag);
-        copy_memory(&tag, &mut out[plaintext.len()..]);
+        out[plaintext.len()..plaintext.len()+tag.len()].copy_from_slice(&tag);
     }
 
     fn decrypt(&self, nonce: u64, authtext: &[u8], ciphertext: &[u8], out: &mut[u8]) -> bool {
@@ -103,7 +102,7 @@ impl CipherType for CipherAESGCM {
         let mut cipher = AesGcm::new(KeySize::KeySize256, &self.key, &nonce_bytes, authtext);
         let text_len = ciphertext.len() - TAGLEN;
         let mut tag = [0u8; TAGLEN];
-        copy_memory(&ciphertext[text_len..], &mut tag);
+        tag.copy_from_slice(&ciphertext[text_len..]);
         cipher.decrypt(&ciphertext[..text_len], &mut out[..text_len], &tag)
     }
 }
@@ -397,7 +396,6 @@ mod tests {
     use super::crypto::poly1305::Poly1305;
     use super::crypto::mac::Mac;
 
-    use utils::*;
     use constants::*;
 
     #[test]
@@ -569,8 +567,8 @@ mod tests {
             let authtext = "f33388860000000000004e91".from_hex().unwrap();
             let mut combined_text = [0u8; 1024];
             let mut out = [0u8; 1024];
-            copy_memory(&ciphertext, &mut combined_text);
-            copy_memory(&tag[0..TAGLEN], &mut combined_text[ciphertext.len()..]);
+            combined_text[..ciphertext.len()].copy_from_slice(&ciphertext);
+            combined_text[ciphertext.len()..ciphertext.len()+tag.len()].copy_from_slice(&tag);
 
             let cipher = CipherChaChaPoly::new(key);
             assert!(cipher.decrypt(nonce, &authtext, &combined_text[..ciphertext.len()+TAGLEN], &mut out[..ciphertext.len()]));
@@ -593,6 +591,5 @@ mod tests {
                                      726573732e2fe2809d";
             assert_eq!(out[..ciphertext.len()].to_hex(), desired_plaintext);
         }
-
     }
 }

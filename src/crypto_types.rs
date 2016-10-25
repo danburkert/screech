@@ -1,4 +1,3 @@
-use utils::*;
 use constants::*;
 
 pub trait RandomType {
@@ -96,7 +95,7 @@ pub trait HashType {
         let mut in2 = [0u8; MAXHASHLEN+1];
         self.hmac(chaining_key, input_key_material, &mut temp_key);
         self.hmac(&temp_key, &[1u8], out1);
-        copy_memory(&out1[0..Self::hash_len()], &mut in2);
+        in2[..Self::hash_len()].copy_from_slice(&out1[..Self::hash_len()]);
         in2[Self::hash_len()] = 2;
         self.hmac(&temp_key, &in2[..Self::hash_len()+1], out2);
     }
