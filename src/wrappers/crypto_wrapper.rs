@@ -1,5 +1,4 @@
 extern crate crypto;
-extern crate byteorder;
 
 use std::fmt;
 
@@ -17,7 +16,7 @@ use self::crypto::aead::{AeadEncryptor, AeadDecryptor};
 use self::crypto::curve25519::{curve25519, curve25519_base};
 use self::crypto::util::fixed_time_eq;
 
-use self::byteorder::{ByteOrder, BigEndian, LittleEndian};
+use byteorder::{ByteOrder, BigEndian, LittleEndian};
 
 use crypto_types::*;
 use constants::*;

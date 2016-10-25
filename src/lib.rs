@@ -1,3 +1,6 @@
+extern crate byteorder;
+
+mod cipher;
 mod cipherstate;
 mod constants;
 mod crypto_types;

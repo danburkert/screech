@@ -3,9 +3,12 @@ name = "screech"
 version = "0.1.0"
 authors = ["trevp"]
 
+[features]
+default = ["rust-crypto"]
+
 [dependencies]
-rust-crypto = "*"
-byteorder = "*"
+rust-crypto = { version = "0.2", optional = true }
+byteorder = "0.5"
 rand = "0.3"
 
 [dev-dependencies]
