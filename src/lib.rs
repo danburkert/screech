@@ -8,7 +8,7 @@ mod symmetricstate;
 mod utils;
 mod wrappers;
 
-pub use cipherstate::{CipherState, CipherStateType};
+pub use cipherstate::CipherState;
 pub use crypto_types::{RandomType, DhType, CipherType, HashType};
 pub use handshakecryptoowner::HandshakeCryptoOwner;
 pub use handshakestate::HandshakeState;

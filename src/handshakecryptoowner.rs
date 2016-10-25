@@ -1,12 +1,10 @@
 use crypto_types::*;
-use cipherstate::*;
 
-pub struct HandshakeCryptoOwner<R: RandomType + Default, 
-                          D: DhType + Default, 
-                          C: CipherType + Default, 
-                          H: HashType + Default> {
+pub struct HandshakeCryptoOwner<R, D, H>
+where R: RandomType,
+      D: DhType,
+      H: HashType {
     pub rng: R,
-    pub cipherstate: CipherState<C>,
     pub hasher: H,
     pub s: Option<D>,
     pub e: Option<D>,
@@ -14,15 +12,13 @@ pub struct HandshakeCryptoOwner<R: RandomType + Default,
     pub re: Option<D::PublicKey>,
 }
 
-impl<R: RandomType + Default, 
-     D: DhType + Default, 
-     C: CipherType + Default, 
-     H: HashType + Default> Default for HandshakeCryptoOwner<R, D, C, H> {
-
-    fn default() -> HandshakeCryptoOwner<R, D, C, H> {
+impl<R, D, H> Default for HandshakeCryptoOwner<R, D, H>
+where R: RandomType + Default,
+      D: DhType,
+      H: HashType + Default {
+    fn default() -> HandshakeCryptoOwner<R, D, H> {
         HandshakeCryptoOwner{
             rng : Default::default(),
-            cipherstate: Default::default(),
             hasher: Default::default(),
             s: None,
             e: None,
@@ -32,12 +28,12 @@ impl<R: RandomType + Default,
     }
 }
 
-impl<R: RandomType + Default, 
-     D: DhType + Default, 
-     C: CipherType + Default, 
-     H: HashType + Default> HandshakeCryptoOwner<R, D, C, H> {
+impl<R, D, H> HandshakeCryptoOwner<R, D, H>
+where R: RandomType + Default,
+      D: DhType,
+      H: HashType + Default {
 
-    pub fn new() -> HandshakeCryptoOwner<R, D, C, H> {
+    pub fn new() -> HandshakeCryptoOwner<R, D, H> {
         Default::default()
     }
 

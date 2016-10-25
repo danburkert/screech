@@ -1,38 +1,24 @@
-
 use crypto_types::*;
 
-pub trait CipherStateType {
-    fn name(&self) -> &'static str;
-    fn set(&mut self, key: &[u8], n: u64);
-    fn encrypt_ad(&mut self, authtext: &[u8], plaintext: &[u8], out: &mut[u8]);
-    fn decrypt_ad(&mut self, authtext: &[u8], ciphertext: &[u8], out: &mut[u8]) -> bool;
-    fn encrypt(&mut self, plaintext: &[u8], out: &mut[u8]);
-    fn decrypt(&mut self, ciphertext: &[u8], out: &mut[u8]) -> bool;
-}
-
-#[derive(Default)]
-pub struct CipherState<C: CipherType + Default> {
-    cipher : C,
-    n : u64,
-    has_key : bool,
+#[derive(Debug, PartialEq, Eq)]
+pub struct CipherState<C: CipherType> {
+    cipher: C,
+    n: u64,
     overflow: bool
 }
 
-impl<C: CipherType + Default> CipherStateType for CipherState<C> {
+impl<C: CipherType> CipherState<C> {
 
-    fn name(&self) -> &'static str {
-        self.cipher.name()
+    pub fn new(key: C::Key, n: u64) -> CipherState<C> {
+        CipherState {
+            cipher: C::new(key),
+            n: n,
+            overflow: false,
+        }
     }
 
-    fn set(&mut self, key: &[u8], n: u64) {
-        self.cipher.set(key);
-        self.n = n;
-        self.has_key = true;
-        self.overflow = false;
-    }
-
-    fn encrypt_ad(&mut self, authtext: &[u8], plaintext: &[u8], out: &mut[u8]) {
-        assert!(self.has_key && !self.overflow);
+    pub fn encrypt_ad(&mut self, authtext: &[u8], plaintext: &[u8], out: &mut[u8]) {
+        assert!(!self.overflow);
         self.cipher.encrypt(self.n, authtext, plaintext, out);
         self.n += 1;
         if self.n == 0 {
@@ -40,8 +26,8 @@ impl<C: CipherType + Default> CipherStateType for CipherState<C> {
         }
     }
 
-    fn decrypt_ad(&mut self, authtext: &[u8], ciphertext: &[u8], out: &mut[u8]) -> bool {
-        assert!(self.has_key && !self.overflow);
+    pub fn decrypt_ad(&mut self, authtext: &[u8], ciphertext: &[u8], out: &mut[u8]) -> bool {
+        assert!(!self.overflow);
         let result = self.cipher.decrypt(self.n, authtext, ciphertext, out);
         self.n += 1;
         if self.n == 0 {
@@ -50,11 +36,11 @@ impl<C: CipherType + Default> CipherStateType for CipherState<C> {
         result
     }
 
-    fn encrypt(&mut self, plaintext: &[u8], out: &mut[u8]) {
+    pub fn encrypt(&mut self, plaintext: &[u8], out: &mut[u8]) {
         self.encrypt_ad(&[0u8;0], plaintext, out)
     }
 
-    fn decrypt(&mut self, ciphertext: &[u8], out: &mut[u8]) -> bool {
+    pub fn decrypt(&mut self, ciphertext: &[u8], out: &mut[u8]) -> bool {
         self.decrypt_ad(&[0u8;0], ciphertext, out)
     }
 }

@@ -36,9 +36,14 @@ pub trait DhType {
 }
 
 pub trait CipherType {
-    fn name(&self) -> &'static str;
 
-    fn set(&mut self, key: &[u8]);
+    /// The type of the cipher key.
+    type Key: AsRef<[u8]> + AsMut<[u8]> + Default;
+
+    fn name() -> &'static str;
+
+    fn new(key: Self::Key) -> Self;
+
     fn encrypt(&self, nonce: u64, authtext: &[u8], plaintext: &[u8], out: &mut[u8]);
     fn decrypt(&self, nonce: u64, authtext: &[u8], ciphertext: &[u8], out: &mut[u8]) -> bool;
 }

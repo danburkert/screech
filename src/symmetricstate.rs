@@ -3,53 +3,26 @@ use constants::*;
 use crypto_types::*;
 use cipherstate::*;
 
-pub trait SymmetricStateType {
-    fn cipher_name(&self) -> &'static str;
-    fn hash_name(&self) -> &'static str;
-    fn initialize(&mut self, handshake_name: &[u8]);
-    fn mix_key(&mut self, data: &[u8]);
-    fn mix_hash(&mut self, data: &[u8]);
-    fn mix_preshared_key(&mut self, psk: &[u8]);
-    fn has_key(&self) -> bool;
-    fn has_preshared_key(&self) -> bool;
-    fn encrypt_and_hash(&mut self, plaintext: &[u8], out: &mut [u8]) -> usize;
-    fn decrypt_and_hash(&mut self, data: &[u8], out: &mut [u8]) -> bool;
-    fn split(&mut self, child1: &mut CipherStateType, child2: &mut CipherStateType);
-}
-
-pub struct SymmetricState<'a> {
-    cipherstate : &'a mut CipherStateType,
+pub struct SymmetricState<'a, C> where C: CipherType + 'a {
+    cipherstate: Option<CipherState<C>>,
     hasher: &'a mut HashType,
-    h : [u8; MAXHASHLEN],
+    h: [u8; MAXHASHLEN],
     ck: [u8; MAXHASHLEN],
-    has_key: bool,
     has_preshared_key: bool,
 }
 
-impl<'a> SymmetricState<'a> {
-    pub fn new(cipherstate : &'a mut CipherStateType, hasher: &'a mut HashType) -> SymmetricState<'a> {
+impl<'a, C> SymmetricState<'a, C> where C: CipherType {
+    pub fn new(hasher: &'a mut HashType) -> SymmetricState<'a, C> {
         SymmetricState {
-            cipherstate: cipherstate,
+            cipherstate: None,
             hasher: hasher,
             h: [0u8; MAXHASHLEN],
             ck : [0u8; MAXHASHLEN],
-            has_key: false,
             has_preshared_key: false,
         }
     }
-}
 
-impl<'a> SymmetricStateType for SymmetricState<'a> {
-
-    fn cipher_name(&self) -> &'static str {
-        self.cipherstate.name()
-    }
-
-    fn hash_name(&self) -> &'static str {
-        self.hasher.name()
-    }
-
-    fn initialize(&mut self, handshake_name: &[u8]) {
+    pub fn initialize(&mut self, handshake_name: &[u8]) {
         if handshake_name.len() <= self.hasher.hash_len() {
             self.h = [0u8; MAXHASHLEN];
             copy_memory(handshake_name, &mut self.h);
@@ -59,20 +32,21 @@ impl<'a> SymmetricStateType for SymmetricState<'a> {
             self.hasher.result(&mut self.h);
         }
         copy_memory(&self.h, &mut self.ck);
-        self.has_key = false;
         self.has_preshared_key = false;
     }
 
-    fn mix_key(&mut self, data: &[u8]) {
+    pub fn mix_key(&mut self, data: &[u8]) {
         let hash_len = self.hasher.hash_len();
         let mut hkdf_output = ([0u8; MAXHASHLEN], [0u8; MAXHASHLEN]);
         self.hasher.hkdf(&self.ck[..hash_len], data, &mut hkdf_output.0, &mut hkdf_output.1);
         copy_memory(&hkdf_output.0, &mut self.ck);
-        self.cipherstate.set(&hkdf_output.1[..CIPHERKEYLEN], 0);
-        self.has_key = true;
+
+        let mut key = C::Key::default();
+        key.as_mut().copy_from_slice(&hkdf_output.1[..CIPHERKEYLEN]);
+        self.cipherstate = Some(CipherState::new(key, 0));
     }
 
-    fn mix_hash(&mut self, data: &[u8]) {
+    pub fn mix_hash(&mut self, data: &[u8]) {
         let hash_len = self.hasher.hash_len();
         self.hasher.reset();
         self.hasher.input(&self.h[..hash_len]);
@@ -80,7 +54,7 @@ impl<'a> SymmetricStateType for SymmetricState<'a> {
         self.hasher.result(&mut self.h);
     }
 
-    fn mix_preshared_key(&mut self, psk: &[u8]) {
+    pub fn mix_preshared_key(&mut self, psk: &[u8]) {
         let hash_len = self.hasher.hash_len();
         let mut hkdf_output = ([0u8; MAXHASHLEN], [0u8; MAXHASHLEN]);
         self.hasher.hkdf(&self.ck[..hash_len], psk, &mut hkdf_output.0, &mut hkdf_output.1);
@@ -89,21 +63,20 @@ impl<'a> SymmetricStateType for SymmetricState<'a> {
         self.has_preshared_key = true;
     }
 
-    fn has_key(&self) -> bool {
-       self.has_key
+    pub fn has_key(&self) -> bool {
+       self.cipherstate.is_some()
     }
 
-    fn has_preshared_key(&self) -> bool {
+    pub fn has_preshared_key(&self) -> bool {
         self.has_preshared_key
     }
 
-    fn encrypt_and_hash(&mut self, plaintext: &[u8], out: &mut [u8]) -> usize {
+    pub fn encrypt_and_hash(&mut self, plaintext: &[u8], out: &mut [u8]) -> usize {
         let hash_len = self.hasher.hash_len();
-        let output_len = if self.has_key {
-            self.cipherstate.encrypt_ad(&self.h[..hash_len], plaintext, out);
+        let output_len = if let Some(ref mut cipherstate) = self.cipherstate {
+            cipherstate.encrypt_ad(&self.h[..hash_len], plaintext, out);
             plaintext.len() + TAGLEN
-        }
-        else {
+        } else {
             copy_memory(plaintext, out);
             plaintext.len()
         };
@@ -111,28 +84,31 @@ impl<'a> SymmetricStateType for SymmetricState<'a> {
         output_len
     }
 
-    fn decrypt_and_hash(&mut self, data: &[u8], out: &mut [u8]) -> bool {
+    pub fn decrypt_and_hash(&mut self, data: &[u8], out: &mut [u8]) -> bool {
         let hash_len = self.hasher.hash_len();
-        if self.has_key {
-            if !self.cipherstate.decrypt_ad(&self.h[..hash_len], data, out) { 
-                return false; 
+        if let Some(ref mut cipherstate) = self.cipherstate {
+            if !cipherstate.decrypt_ad(&self.h[..hash_len], data, out) {
+                return false;
             }
-        }
-        else {
+        } else {
             copy_memory(data, out);
         }
         self.mix_hash(data);
         true
     }
 
-    fn split(&mut self, child1: &mut CipherStateType, child2: &mut CipherStateType) {
+    pub fn split(&mut self) -> (CipherState<C>, CipherState<C>) {
         let hash_len = self.hasher.hash_len();
         let mut hkdf_output = ([0u8; MAXHASHLEN], [0u8; MAXHASHLEN]);
-        self.hasher.hkdf(&self.ck[..hash_len], &[0u8; 0], 
-                         &mut hkdf_output.0, 
+        self.hasher.hkdf(&self.ck[..hash_len], &[0u8; 0],
+                         &mut hkdf_output.0,
                          &mut hkdf_output.1);
-        child1.set(&hkdf_output.0[..CIPHERKEYLEN], 0);
-        child2.set(&hkdf_output.1[..CIPHERKEYLEN], 0);
-    }
 
+        let mut key1 = C::Key::default();
+        let mut key2 = C::Key::default();
+        key1.as_mut().copy_from_slice(&hkdf_output.0[..CIPHERKEYLEN]);
+        key2.as_mut().copy_from_slice(&hkdf_output.1[..CIPHERKEYLEN]);
+
+        (CipherState::new(key1, 0), CipherState::new(key2, 0))
+    }
 }
