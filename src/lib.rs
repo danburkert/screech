@@ -6,6 +6,7 @@ mod constants;
 mod crypto_types;
 mod handshakecryptoowner;
 mod handshakestate;
+mod hash;
 mod patterns;
 mod symmetricstate;
 mod wrappers;
