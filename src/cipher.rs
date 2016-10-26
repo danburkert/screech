@@ -155,7 +155,7 @@ mod rust_crypto {
         use constants::TAGLEN;
 
         #[test]
-        fn aes256_gcm_test() {
+        fn aes256_gcm() {
             //AES256-GCM tests - gcm-spec.pdf
             // Test Case 13
 
@@ -191,7 +191,7 @@ mod rust_crypto {
         }
 
         #[test]
-        fn poly1305_internal_test() {
+        fn poly1305_internal() {
             use super::crypto::mac::Mac;
             use super::crypto::poly1305::Poly1305;
 
@@ -206,7 +206,7 @@ mod rust_crypto {
         }
 
         #[test]
-        fn chachapoly_round_trip_empty_test() {
+        fn chachapoly_round_trip_empty() {
             //ChaChaPoly round-trip test, empty plaintext
             let key = [0u8; 32];
             let nonce = 0u64;
@@ -225,7 +225,7 @@ mod rust_crypto {
         }
 
         #[test]
-        fn chachapoly_rout_trip_test() {
+        fn chachapoly_round_trip() {
             //ChaChaPoly round-trip test, non-empty plaintext
             let key = [0u8; 32];
             let nonce = 0u64;
@@ -242,7 +242,7 @@ mod rust_crypto {
         }
 
         #[test]
-        fn chachapoly_known_answer_test() {
+        fn chachapoly_known_answer() {
             //ChaChaPoly known-answer test - RFC 7539
             let mut key = [0; 32];
             key.copy_from_slice(&"1c9240a5eb55d38af333888604f6b5f0473917c1402b80099dca5cbc207075c0".from_hex().unwrap());

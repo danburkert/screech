@@ -50,14 +50,14 @@ pub trait Hash {
         self.result(out);
     }
 
-    /// **`HKDF(chaining_key, input_key_material)`**:  Takes a `chaining_key` byte sequence of
-    /// length `hash_len()`, and an `input_key_material` byte sequence with length either zero
-    /// bytes, 32 bytes, or `DHLEN` bytes.  Returns two byte sequences of length `hash_len()`, as
-    /// follows:
-    /// * Sets `temp_key = HMAC-HASH(chaining_key, input_key_material)`.
-    /// * Sets `output1 = HMAC-HASH(temp_key, byte(0x01))`.
-    /// * Sets `output2 = HMAC-HASH(temp_key, output1 || byte(0x02))`.
-    /// * Returns the pair `(output1, output2)`.
+    /// Takes a `chaining_key` byte sequence of length `hash_len()`, and an `input_key_material`
+    /// byte sequence with length either zero bytes, 32 bytes, or `DHLEN` bytes.  Returns two byte
+    /// sequences of length `hash_len()`, as follows:
+    ///
+    ///   * Sets `temp_key = HMAC-HASH(chaining_key, input_key_material)`.
+    ///   * Sets `output1 = HMAC-HASH(temp_key, byte(0x01))`.
+    ///   * Sets `output2 = HMAC-HASH(temp_key, output1 || byte(0x02))`.
+    ///   * Returns the pair `(output1, output2)`.
     ///
     /// Note that `temp_key`, `output1`, and `output2` are all `hash_len()` bytes in length.  Also
     /// note that the `HKDF()` function is simply `HKDF` from

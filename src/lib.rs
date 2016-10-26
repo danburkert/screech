@@ -4,6 +4,7 @@ mod cipher;
 mod cipherstate;
 mod constants;
 mod crypto_types;
+mod diffie_hellman;
 mod handshakecryptoowner;
 mod handshakestate;
 mod hash;
