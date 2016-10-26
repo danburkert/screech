@@ -1,4 +1,5 @@
 extern crate byteorder;
+extern crate rand;
 
 mod cipher;
 mod cipherstate;
@@ -9,6 +10,7 @@ mod handshakecryptoowner;
 mod handshakestate;
 mod hash;
 mod patterns;
+mod random;
 mod symmetricstate;
 mod wrappers;
 

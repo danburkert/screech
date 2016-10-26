@@ -4,12 +4,12 @@ version = "0.1.0"
 authors = ["trevp"]
 
 [features]
-default = ["rust-crypto"]
+default = ["rand", "rust-crypto"]
 
 [dependencies]
-rust-crypto = { version = "0.2", optional = true }
 byteorder = "0.5"
-rand = "0.3"
+rand = { version = "0.3", optional = true }
+rust-crypto = { version = "0.2", optional = true }
 
 [dev-dependencies]
 rustc-serialize = "0.3"

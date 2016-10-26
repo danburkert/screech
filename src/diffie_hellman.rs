@@ -1,4 +1,4 @@
-use RandomType;
+use random::Random;
 
 /// A Diffie-Hellman key exchange function.
 pub trait DiffieHellman {
@@ -17,7 +17,7 @@ pub trait DiffieHellman {
     fn new(private_key: Self::PrivateKey, public_key: Self::PublicKey) -> Self;
 
     /// Creates a new instance of the DiffieHellman function with randomly generated keys.
-    fn generate(rng: &mut RandomType) -> Self;
+    fn generate(rng: &mut Random) -> Self;
 
     /// Returns the name of the Diffie Hellman type.
     fn name() -> &'static str;
@@ -46,7 +46,7 @@ mod rust_crypto {
     use self::crypto::curve25519::{curve25519, curve25519_base};
 
     use super::DiffieHellman;
-    use RandomType;
+    use random::Random;
 
     #[derive(Clone)]
     pub struct X25519 {
@@ -65,7 +65,7 @@ mod rust_crypto {
             }
         }
 
-        fn generate(rng: &mut RandomType) -> X25519 {
+        fn generate(rng: &mut Random) -> X25519 {
             let mut private_key = [0; 32];
             rng.fill_bytes(&mut private_key);
             private_key[0] &= 248;
