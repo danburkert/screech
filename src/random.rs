@@ -4,7 +4,7 @@ pub trait Random {
 }
 
 #[cfg(feature = "rand")]
-mod rand {
+pub mod rand {
 
     extern crate rand;
 

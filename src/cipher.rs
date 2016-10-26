@@ -12,7 +12,7 @@ pub trait Cipher {
 }
 
 #[cfg(feature = "rust-crypto")]
-mod rust_crypto {
+pub mod rust_crypto {
     extern crate crypto;
 
     use std::fmt;

@@ -37,7 +37,7 @@ pub trait DiffieHellman {
 }
 
 #[cfg(feature = "rust-crypto")]
-mod rust_crypto {
+pub mod rust_crypto {
 
     extern crate crypto;
 

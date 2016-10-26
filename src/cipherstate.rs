@@ -1,15 +1,16 @@
-use crypto_types::*;
+use Cipher;
+use constants::CIPHERKEYLEN;
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct CipherState<C: CipherType> {
+pub struct CipherState<C> where C: Cipher {
     cipher: C,
     n: u64,
     overflow: bool
 }
 
-impl<C: CipherType> CipherState<C> {
+impl<C> CipherState<C> where C: Cipher {
 
-    pub fn new(key: C::Key, n: u64) -> CipherState<C> {
+    pub fn new(key: [u8; CIPHERKEYLEN], n: u64) -> CipherState<C> {
         CipherState {
             cipher: C::new(key),
             n: n,

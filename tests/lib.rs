@@ -11,13 +11,14 @@ struct RandomInc {
 }
 
 impl Default for RandomInc {
-
     fn default() -> RandomInc {
-        RandomInc {next_byte: 0}
+        RandomInc {
+            next_byte: 0,
+        }
     }
 }
 
-impl RandomType for RandomInc {
+impl Random for RandomInc {
 
     fn fill_bytes(&mut self, out: &mut [u8]) {
         for count in 0..out.len() {
@@ -39,15 +40,15 @@ pub fn copy_memory(data: &[u8], out: &mut [u8]) -> usize {
 
 #[test]
 fn test_Noise_N() {
-    let mut owner = HandshakeCryptoOwner::<RandomInc, Dh25519>::new();
-    let static_r = Dh25519::generate(&mut owner.rng);
-    owner.set_rs(*static_r.pubkey());
+    let mut owner = HandshakeCryptoOwner::<RandomInc, X25519>::new();
+    let static_r = X25519::generate(&mut owner.rng);
+    owner.set_rs(*static_r.public_key());
 
-    let mut h = HandshakeState::<_, CipherAESGCM, HashSHA256>::new_from_owner(&mut owner,
-                                                                              true,
-                                                                              HandshakePattern::N,
-                                                                              &[0u8; 0],
-                                                                              None);
+    let mut h = HandshakeState::<_, AesGcm, Sha256>::new_from_owner(&mut owner,
+                                                                    true,
+                                                                    HandshakePattern::N,
+                                                                    &[0u8; 0],
+                                                                    None);
 
     let mut buffer = [0u8; 48];
     assert_eq!(h.write_message(&[0u8;0], &mut buffer).0, 48);
@@ -56,18 +57,18 @@ fn test_Noise_N() {
 
 #[test]
 fn test_Noise_X() {
-    let mut owner = HandshakeCryptoOwner::<RandomInc, Dh25519>::new();
-    let static_i = Dh25519::generate(&mut owner.rng);
-    let static_r = Dh25519::generate(&mut owner.rng);
+    let mut owner = HandshakeCryptoOwner::<RandomInc, X25519>::new();
+    let static_i = X25519::generate(&mut owner.rng);
+    let static_r = X25519::generate(&mut owner.rng);
 
     owner.set_s(static_i);
-    owner.set_rs(*static_r.pubkey());
+    owner.set_rs(*static_r.public_key());
 
-    let mut h = HandshakeState::<_, CipherChaChaPoly, HashSHA256>::new_from_owner(&mut owner,
-                                                                                  true,
-                                                                                  HandshakePattern::X,
-                                                                                  &[0u8; 0],
-                                                                                  None);
+    let mut h = HandshakeState::<_, ChaChaPoly, Sha256>::new_from_owner(&mut owner,
+                                                                        true,
+                                                                        HandshakePattern::X,
+                                                                        &[0u8; 0],
+                                                                        None);
 
     let mut buffer = [0u8; 96];
     assert_eq!(h.write_message(&[0u8;0], &mut buffer).0, 96);
@@ -76,22 +77,22 @@ fn test_Noise_X() {
 
 #[test]
 fn test_Noise_NN() {
-    let mut owner_i: HandshakeCryptoOwner<RandomInc, Dh25519> = Default::default();
-    let mut owner_r: HandshakeCryptoOwner<RandomInc, Dh25519> = Default::default();
+    let mut owner_i: HandshakeCryptoOwner<RandomInc, X25519> = Default::default();
+    let mut owner_r: HandshakeCryptoOwner<RandomInc, X25519> = Default::default();
 
     owner_r.rng.next_byte = 1;
 
-    let mut h_i = HandshakeState::<_, CipherAESGCM, HashSHA512>::new_from_owner(&mut owner_i,
-                                                                                true,
-                                                                                HandshakePattern::NN,
-                                                                                &[0u8; 0],
-                                                                                None);
+    let mut h_i = HandshakeState::<_, AesGcm, Sha512>::new_from_owner(&mut owner_i,
+                                                                      true,
+                                                                      HandshakePattern::NN,
+                                                                      &[0u8; 0],
+                                                                      None);
 
-    let mut h_r = HandshakeState::<_, CipherAESGCM, HashSHA512>::new_from_owner(&mut owner_r,
-                                                                                false,
-                                                                                HandshakePattern::NN,
-                                                                                &[0u8; 0],
-                                                                                None);
+    let mut h_r = HandshakeState::<_, AesGcm, Sha512>::new_from_owner(&mut owner_r,
+                                                                      false,
+                                                                      HandshakePattern::NN,
+                                                                      &[0u8; 0],
+                                                                      None);
 
     let mut buffer_msg = [0u8; 64];
     let mut buffer_out = [0u8; 10];
@@ -107,26 +108,26 @@ fn test_Noise_NN() {
 
 #[test]
 fn test_Noise_XX() {
-    let mut owner_i = HandshakeCryptoOwner::<RandomInc, Dh25519>::new();
-    let mut owner_r = HandshakeCryptoOwner::<RandomInc, Dh25519>::new();
+    let mut owner_i = HandshakeCryptoOwner::<RandomInc, X25519>::new();
+    let mut owner_r = HandshakeCryptoOwner::<RandomInc, X25519>::new();
 
     owner_r.rng.next_byte = 1;
-    let static_i = Dh25519::generate(&mut owner_i.rng);
-    let static_r = Dh25519::generate(&mut owner_r.rng);
+    let static_i = X25519::generate(&mut owner_i.rng);
+    let static_r = X25519::generate(&mut owner_r.rng);
     owner_i.set_s(static_i);
     owner_r.set_s(static_r);
 
-    let mut h_i = HandshakeState::<_, CipherAESGCM, HashSHA256>::new_from_owner(&mut owner_i,
-                                                                                true,
-                                                                                HandshakePattern::XX,
-                                                                                &[0u8; 0],
-                                                                                None);
+    let mut h_i = HandshakeState::<_, AesGcm, Sha256>::new_from_owner(&mut owner_i,
+                                                                      true,
+                                                                      HandshakePattern::XX,
+                                                                      &[0u8; 0],
+                                                                      None);
 
-    let mut h_r = HandshakeState::<_, CipherAESGCM, HashSHA256>::new_from_owner(&mut owner_r,
-                                                                                false,
-                                                                                HandshakePattern::XX,
-                                                                                &[0u8; 0],
-                                                                                None);
+    let mut h_r = HandshakeState::<_, AesGcm, Sha256>::new_from_owner(&mut owner_r,
+                                                                      false,
+                                                                      HandshakePattern::XX,
+                                                                      &[0u8; 0],
+                                                                      None);
 
     let mut buffer_msg = [0u8; 200];
     let mut buffer_out = [0u8; 200];
@@ -145,27 +146,27 @@ fn test_Noise_XX() {
 
 #[test]
 fn test_Noise_IK() {
-    let mut owner_i = HandshakeCryptoOwner::<RandomInc, Dh25519>::new();
-    let mut owner_r = HandshakeCryptoOwner::<RandomInc, Dh25519>::new();
+    let mut owner_i = HandshakeCryptoOwner::<RandomInc, X25519>::new();
+    let mut owner_r = HandshakeCryptoOwner::<RandomInc, X25519>::new();
 
     owner_r.rng.next_byte = 1;
-    let static_i = Dh25519::generate(&mut owner_i.rng);
-    let static_r = Dh25519::generate(&mut owner_r.rng);
+    let static_i = X25519::generate(&mut owner_i.rng);
+    let static_r = X25519::generate(&mut owner_r.rng);
     owner_i.set_s(static_i);
-    owner_i.set_rs(*static_r.pubkey());
+    owner_i.set_rs(*static_r.public_key());
     owner_r.set_s(static_r);
 
-    let mut h_i = HandshakeState::<_, CipherAESGCM, HashSHA256>::new_from_owner(&mut owner_i,
-                                                                                true,
-                                                                                HandshakePattern::IK,
-                                                                                b"ABC",
-                                                                                None);
+    let mut h_i = HandshakeState::<_, AesGcm, Sha256>::new_from_owner(&mut owner_i,
+                                                                      true,
+                                                                      HandshakePattern::IK,
+                                                                      b"ABC",
+                                                                      None);
 
-    let mut h_r = HandshakeState::<_, CipherAESGCM, HashSHA256>::new_from_owner(&mut owner_r,
-                                                                                false,
-                                                                                HandshakePattern::IK,
-                                                                                b"ABC",
-                                                                                None);
+    let mut h_r = HandshakeState::<_, AesGcm, Sha256>::new_from_owner(&mut owner_r,
+                                                                      false,
+                                                                      HandshakePattern::IK,
+                                                                      b"ABC",
+                                                                      None);
 
     let mut buffer_msg = [0u8; 200];
     let mut buffer_out = [0u8; 200];

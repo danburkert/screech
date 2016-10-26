@@ -1,6 +1,7 @@
-use crypto_types::*;
+use DiffieHellman;
+use Random;
 
-pub struct HandshakeCryptoOwner<R, D> where R: RandomType, D: DhType {
+pub struct HandshakeCryptoOwner<R, D> where R: Random, D: DiffieHellman {
     pub rng: R,
     pub s: Option<D>,
     pub e: Option<D>,
@@ -8,7 +9,7 @@ pub struct HandshakeCryptoOwner<R, D> where R: RandomType, D: DhType {
     pub re: Option<D::PublicKey>,
 }
 
-impl<R, D> Default for HandshakeCryptoOwner<R, D> where R: RandomType + Default, D: DhType {
+impl<R, D> Default for HandshakeCryptoOwner<R, D> where R: Random + Default, D: DiffieHellman {
     fn default() -> HandshakeCryptoOwner<R, D> {
         HandshakeCryptoOwner{
             rng : Default::default(),
@@ -20,7 +21,7 @@ impl<R, D> Default for HandshakeCryptoOwner<R, D> where R: RandomType + Default,
     }
 }
 
-impl<R, D> HandshakeCryptoOwner<R, D> where R: RandomType + Default, D: DhType {
+impl<R, D> HandshakeCryptoOwner<R, D> where R: Random + Default, D: DiffieHellman {
 
     pub fn new() -> HandshakeCryptoOwner<R, D> {
         Default::default()

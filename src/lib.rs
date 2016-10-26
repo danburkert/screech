@@ -1,10 +1,8 @@
 extern crate byteorder;
-extern crate rand;
 
 mod cipher;
 mod cipherstate;
 mod constants;
-mod crypto_types;
 mod diffie_hellman;
 mod handshakecryptoowner;
 mod handshakestate;
@@ -12,12 +10,34 @@ mod hash;
 mod patterns;
 mod random;
 mod symmetricstate;
-mod wrappers;
+
+pub use cipher::Cipher;
+pub use diffie_hellman::DiffieHellman;
+pub use hash::Hash;
+pub use random::Random;
+
+#[cfg(feature = "rust-crypto")]
+pub use diffie_hellman::rust_crypto::*;
+#[cfg(feature = "rust-crypto")]
+pub use hash::rust_crypto::*;
+#[cfg(feature = "rust-crypto")]
+pub use cipher::rust_crypto::*;
+#[cfg(feature = "rand")]
+pub use random::rand::*;
+
+#[cfg(feature = "rust-crypto")]
+pub mod rust_crypto {
+    pub use diffie_hellman::rust_crypto::*;
+    pub use hash::rust_crypto::*;
+    pub use cipher::rust_crypto::*;
+}
+
+#[cfg(feature = "rand")]
+pub mod rand {
+    pub use random::rand::*;
+}
 
 pub use cipherstate::CipherState;
-pub use crypto_types::{RandomType, DhType, CipherType, HashType};
 pub use handshakecryptoowner::HandshakeCryptoOwner;
 pub use handshakestate::HandshakeState;
 pub use patterns::HandshakePattern;
-pub use wrappers::crypto_wrapper::*;
-pub use wrappers::rand_wrapper::*;

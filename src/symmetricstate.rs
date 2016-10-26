@@ -1,10 +1,9 @@
+use Cipher;
+use Hash;
 use constants::*;
-use crypto_types::*;
 use cipherstate::*;
 
-pub struct SymmetricState<C, H>
-where C: CipherType,
-      H: HashType {
+pub struct SymmetricState<C, H> where C: Cipher, H: Hash {
     cipherstate: Option<CipherState<C>>,
     hasher: H,
     h: [u8; MAXHASHLEN],
@@ -12,9 +11,7 @@ where C: CipherType,
     has_preshared_key: bool,
 }
 
-impl<C, H> SymmetricState<C, H>
-where C: CipherType,
-      H: HashType {
+impl<C, H> SymmetricState<C, H> where C: Cipher, H: Hash {
     pub fn new() -> SymmetricState<C, H> {
         SymmetricState {
             cipherstate: None,
@@ -43,7 +40,7 @@ where C: CipherType,
         self.hasher.hkdf(&self.ck[..H::hash_len()], data, &mut hkdf_output.0, &mut hkdf_output.1);
         self.ck.copy_from_slice(&hkdf_output.0);
 
-        let mut key = C::Key::default();
+        let mut key = [0; CIPHERKEYLEN];
         key.as_mut().copy_from_slice(&hkdf_output.1[..CIPHERKEYLEN]);
         self.cipherstate = Some(CipherState::new(key, 0));
     }
@@ -101,8 +98,8 @@ where C: CipherType,
                          &mut hkdf_output.0,
                          &mut hkdf_output.1);
 
-        let mut key1 = C::Key::default();
-        let mut key2 = C::Key::default();
+        let mut key1 = [0; CIPHERKEYLEN];
+        let mut key2 = [0; CIPHERKEYLEN];
         key1.as_mut().copy_from_slice(&hkdf_output.0[..CIPHERKEYLEN]);
         key2.as_mut().copy_from_slice(&hkdf_output.1[..CIPHERKEYLEN]);
 

@@ -1,5 +1,9 @@
+use Cipher;
+use DiffieHellman;
+use Hash;
+use Random;
+
 use constants::*;
-use crypto_types::*;
 use cipherstate::*;
 use symmetricstate::*;
 use patterns::*;
@@ -9,9 +13,9 @@ use handshakecryptoowner::*;
 pub enum NoiseError { DecryptError }
 
 pub struct HandshakeState<D, C, H>
-where D: DhType,
-      C: CipherType,
-      H: HashType {
+where D: DiffieHellman,
+      C: Cipher,
+      H: Hash {
     symmetricstate : SymmetricState<C, H>,
     s: Option<D>,
     e: D,
@@ -23,10 +27,10 @@ where D: DhType,
 }
 
 impl<D, C, H> HandshakeState<D, C, H>
-where D: DhType + Clone,
+where D: DiffieHellman + Clone,
       D::PublicKey: Clone,
-      C: CipherType,
-      H: HashType {
+      C: Cipher,
+      H: Hash {
 
     pub fn new_from_owner<R>(owner: &mut HandshakeCryptoOwner<R, D>,
                              initiator: bool,
@@ -34,7 +38,7 @@ where D: DhType + Clone,
                              prologue: &[u8],
                              optional_preshared_key: Option<&[u8]>)
                              -> HandshakeState<D, C, H>
-    where R: RandomType {
+    where R: Random {
         HandshakeState::new(&mut owner.rng,
                             owner.s.clone(),
                             owner.e.clone(),
@@ -46,7 +50,7 @@ where D: DhType + Clone,
                             optional_preshared_key)
     }
 
-    pub fn new(rng: &mut RandomType,
+    pub fn new(rng: &mut Random,
                s: Option<D>,
                e: Option<D>,
                rs: Option<D::PublicKey>,
@@ -83,8 +87,8 @@ where D: DhType + Clone,
         if initiator {
             for token in handshake_pattern.initiator_pre_msg_pattern() {
                 match *token {
-                    Token::s => symmetricstate.mix_hash(s.as_ref().unwrap().pubkey().as_ref()),
-                    Token::e => symmetricstate.mix_hash(e.pubkey().as_ref()),
+                    Token::s => symmetricstate.mix_hash(s.as_ref().unwrap().public_key().as_ref()),
+                    Token::e => symmetricstate.mix_hash(e.public_key().as_ref()),
                     _ => unreachable!()
                 }
             }
@@ -105,8 +109,8 @@ where D: DhType + Clone,
             }
             for token in handshake_pattern.recipient_pre_msg_pattern() {
                 match *token {
-                    Token::s => symmetricstate.mix_hash(s.as_ref().unwrap().pubkey().as_ref()),
-                    Token::e => symmetricstate.mix_hash(e.pubkey().as_ref()),
+                    Token::s => symmetricstate.mix_hash(s.as_ref().unwrap().public_key().as_ref()),
+                    Token::e => symmetricstate.mix_hash(e.public_key().as_ref()),
                     _ => unreachable!()
                 }
             }
@@ -150,17 +154,17 @@ where D: DhType + Clone,
         for token in tokens {
             match *token {
                 Token::e => {
-                    let pubkey = self.e.pubkey().as_ref();
-                    message[byte_index..byte_index+pubkey.len()].copy_from_slice(pubkey);
-                    byte_index += pubkey.len();
-                    self.symmetricstate.mix_hash(pubkey);
+                    let public_key = self.e.public_key().as_ref();
+                    message[byte_index..byte_index+public_key.len()].copy_from_slice(public_key);
+                    byte_index += public_key.len();
+                    self.symmetricstate.mix_hash(public_key);
                     if self.symmetricstate.has_preshared_key() {
-                        self.symmetricstate.mix_key(pubkey);
+                        self.symmetricstate.mix_key(public_key);
                     }
                 },
                 Token::s => {
                     let HandshakeState { ref s, ref mut symmetricstate, .. } = *self;
-                    byte_index += symmetricstate.encrypt_and_hash(s.as_ref().unwrap().pubkey().as_ref(),
+                    byte_index += symmetricstate.encrypt_and_hash(s.as_ref().unwrap().public_key().as_ref(),
                                                                   &mut message[byte_index..]);
                 },
                 Token::ee => self.dh(false, false),
